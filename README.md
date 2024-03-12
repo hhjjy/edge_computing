@@ -1,0 +1,2 @@
+# edge_computing
+edge_computing的作業與資料記錄
