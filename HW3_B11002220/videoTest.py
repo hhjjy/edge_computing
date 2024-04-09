@@ -3,9 +3,8 @@ import cv2
 import math
 import os
 import threading
-
+from config import *
 # 初始化 YOLO 模型
-MODEL_PATH = "weights\\best_80_v6.pt"  
 model = YOLO(MODEL_PATH)
 classNames = ["hua", "leo"]
 confidence_threshold = 0.8
