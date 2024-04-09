@@ -11,7 +11,8 @@ face-detect-7/
 config.py
 Pipfile
 Pipfile.lock
-
+output/
+*.txt
 .vscode/
 
 # C extensions
