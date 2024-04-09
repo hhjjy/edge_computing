@@ -1,61 +1,77 @@
 from ultralytics import YOLO
 import cv2
 import math
-import time
-
-# 輸入和輸出檔案名稱
-input_video_path = 'input.mp4'
-output_video_path = 'output.mp4'
+import os
+import threading
 
 # 初始化 YOLO 模型
-MODEL_PATH = "./best_80_v5.pt"
+MODEL_PATH = "weights\\best_80_v6.pt"  
 model = YOLO(MODEL_PATH)
 classNames = ["hua", "leo"]
+confidence_threshold = 0.8
 
-# 打開輸入影片
-cap = cv2.VideoCapture(input_video_path)
+def process_video(video_path, output_path, output_log_path):
+    cap = cv2.VideoCapture(video_path)
+    frame_width = int(cap.get(3))
+    frame_height = int(cap.get(4))
+    fps = int(cap.get(cv2.CAP_PROP_FPS))
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    out = cv2.VideoWriter(output_path, fourcc, fps, (frame_width, frame_height))
+    
+    # 追蹤出現次數
+    class_counts = {className: 0 for className in classNames}
 
-# 獲取影片的基本資訊
-frame_width = int(cap.get(3))
-frame_height = int(cap.get(4))
-fps = int(cap.get(cv2.CAP_PROP_FPS))
+    while cap.isOpened():
+        success, img = cap.read()
+        if not success:
+            break
 
-# 定義輸出影片的編碼和檔案
-fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # 定義編碼格式
-out = cv2.VideoWriter(output_video_path, fourcc, fps, (frame_width, frame_height))
+        results = model(img, stream=True)
 
-confidence_threshold = 0.8  # 信心閥值
+        for r in results:
+            boxes = r.boxes
+            for box in boxes:
+                x1, y1, x2, y2 = box.xyxy[0]
+                x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
+                confidence = math.ceil((box.conf[0]*100))/100
+                if confidence < confidence_threshold:
+                    continue
+                cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 255), 3)
+                cls = int(box.cls[0])
+                class_counts[classNames[cls]] += 1
+                cv2.putText(img, f"{classNames[cls]} {confidence:.2f}", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 0), 2)
 
-while cap.isOpened():
-    success, img = cap.read()
-    if not success:
-        break  # 如果讀取失敗或影片結束，跳出循環
+        out.write(img)
 
-    results = model(img, stream=True)
+    cap.release()
+    out.release()
+    with open(output_log_path, 'w') as log_file:
+        for className, count in class_counts.items():
+            log_file.write(f"{className}:{count}次\n")
+        log_file.write(f"FPS:{fps}\n")
 
-    for r in results:
-        boxes = r.boxes
+def main():
+    input_folder_path = 'input'
+    output_folder_path = 'output'
+    weight_name = os.path.basename(MODEL_PATH).split('.')[0]
 
-        for box in boxes:
-            x1, y1, x2, y2 = box.xyxy[0]
-            x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
+    output_weight_folder = os.path.join(output_folder_path, weight_name)
+    if not os.path.exists(output_weight_folder):
+        os.makedirs(output_weight_folder)
 
-            confidence = math.ceil((box.conf[0]*100))/100
-            if confidence < confidence_threshold:
-                continue  # 如果閥值低於跳過
-            cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 255), 3)
-            cls = int(box.cls[0])
-            org = [x1, y1 - 10]
-            font = cv2.FONT_HERSHEY_SIMPLEX
-            fontScale = 0.5
-            color = (255, 255, 0)
-            thickness = 2
-            cv2.putText(img, f"{classNames[cls]} {confidence:.2f}", org, font, fontScale, color, thickness)
+    videos = [f for f in os.listdir(input_folder_path) if f.endswith('.mp4')]
+    threads = []
 
-    # 將處理後的影像寫入輸出檔案
-    out.write(img)
+    for video in videos:
+        input_video_path = os.path.join(input_folder_path, video)
+        output_video_path = os.path.join(output_weight_folder, video)
+        output_log_path = os.path.join(output_weight_folder, os.path.splitext(video)[0] + "_result.txt")  # 结果日志路径
+        t = threading.Thread(target=process_video, args=(input_video_path, output_video_path, output_log_path))
+        t.start()
+        threads.append(t)
 
-# 釋放資源
-cap.release()
-out.release()
-cv2.destroyAllWindows()
+    for t in threads:
+        t.join()
+
+if __name__ == "__main__":
+    main()
