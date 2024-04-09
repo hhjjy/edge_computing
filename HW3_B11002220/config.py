@@ -1,0 +1,1 @@
+MODEL_PATH="weights\\best_80_v6.pt"
