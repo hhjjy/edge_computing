@@ -10,6 +10,7 @@ face-detect-6/
 face-detect-7/
 Pipfile
 face-detect-*/
+Face_new-*/
 
 Pipfile.lock
 output/

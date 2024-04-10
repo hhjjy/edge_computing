@@ -43,7 +43,7 @@ def plot_data(grouped_files):
         plt.legend()
         plt.tight_layout()
 
-        plt.show()
+    plt.show()
 
 
 output_dir = 'output'
