@@ -1,13 +1,22 @@
+'''
+Author: Leo lion24161582@gmail.com
+Date: 2024-04-10 12:11:59
+LastEditors: Leo lion24161582@gmail.com
+LastEditTime: 2024-04-10 17:13:58
+FilePath: \edge_computing\HW3_B11002220\train.py
+Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+'''
 import subprocess
 import os
 import logging
 from config import *
 
+# model = os.path.join(TRAIN_PATH,"best.pt")
 model = "yolov8n.pt"  
 epochs = EPOCHS 
 save_period = SAVE_PERIOD
 base_command = f"yolo task=detect mode=train model={model} data=data.yaml epochs={epochs} imgsz=640 plots=True batch=32 save_period={save_period}"
-
+print(base_command)
 # 配置日誌
 logging.basicConfig(level=logging.INFO, filename='training_log.log',
                     format="%(asctime)s - %(levelname)s - %(message)s")

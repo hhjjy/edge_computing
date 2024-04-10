@@ -12,7 +12,7 @@ MODEL_PATH="weights\\best_120_v7.pt"
 PROCESS_ALL_WEIGHTS = False
 
 # Train.py參數
-TRAIN_PATH="Face_New-3"
+TRAIN_PATH="Face_New-4"
 EPOCHS = 240  # 訓練次數次數
 SAVE_PERIOD = 80  # 每80 個epoch保存一次模型
 # Visualize.py參數
