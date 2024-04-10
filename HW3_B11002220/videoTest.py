@@ -1,3 +1,11 @@
+'''
+Author: Leo lion24161582@gmail.com
+Date: 2024-04-09 22:21:07
+LastEditors: Leo lion24161582@gmail.com
+LastEditTime: 2024-04-10 11:32:24
+FilePath: \edge_computing\HW3_B11002220\videoTest.py
+Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+'''
 from ultralytics import YOLO
 import cv2
 import math
@@ -5,18 +13,19 @@ import os
 import threading
 from config import *
 # 初始化 YOLO 模型
-model = YOLO(MODEL_PATH)
 classNames = ["hua", "leo"]
 confidence_threshold = 0.8
 
-def process_video(video_path, output_path, output_log_path):
+def process_video(video_path, output_path, output_log_path, model_path):
+    model = YOLO(model_path)
+
     cap = cv2.VideoCapture(video_path)
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
     fps = int(cap.get(cv2.CAP_PROP_FPS))
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out = cv2.VideoWriter(output_path, fourcc, fps, (frame_width, frame_height))
-    
+
     # 追蹤出現次數
     class_counts = {className: 0 for className in classNames}
 
@@ -46,31 +55,51 @@ def process_video(video_path, output_path, output_log_path):
     out.release()
     with open(output_log_path, 'w') as log_file:
         for className, count in class_counts.items():
-            log_file.write(f"{className}:{count}次\n")
+            log_file.write(f"{className}:{count}\n")
         log_file.write(f"FPS:{fps}\n")
 
 def main():
     input_folder_path = 'input'
     output_folder_path = 'output'
-    weight_name = os.path.basename(MODEL_PATH).split('.')[0]
+    weight_folder_path = 'weights'
 
-    output_weight_folder = os.path.join(output_folder_path, weight_name)
-    if not os.path.exists(output_weight_folder):
+    # 獲取所有權重名稱（不含擴展名）
+    weight_names = [os.path.splitext(os.path.basename(f))[0] for f in os.listdir(weight_folder_path) if f.endswith('.pt')]
+
+    for weight_name in weight_names:
+        model_path = os.path.join(weight_folder_path, weight_name + '.pt')  # 構造模型路徑
+
+        output_weight_folder = os.path.join(output_folder_path, weight_name)
+        
+        # 檢查對應權重的輸出資料夾是否已存在
+        if os.path.exists(output_weight_folder):
+            print(f"Skipping weight {weight_name} as output folder already exists.")
+            continue  # 如果存在，跳過此權重的處理
+
+        # 如果輸出資料夾不存在，則創建資料夾
         os.makedirs(output_weight_folder)
 
-    videos = [f for f in os.listdir(input_folder_path) if f.endswith('.mp4')]
-    threads = []
+        videos = [f for f in os.listdir(input_folder_path) if f.endswith('.mp4')]
+        threads = []
 
-    for video in videos:
-        input_video_path = os.path.join(input_folder_path, video)
-        output_video_path = os.path.join(output_weight_folder, video)
-        output_log_path = os.path.join(output_weight_folder, os.path.splitext(video)[0] + "_result.txt")  # 结果日志路径
-        t = threading.Thread(target=process_video, args=(input_video_path, output_video_path, output_log_path))
-        t.start()
-        threads.append(t)
+        for video in videos:
+            input_video_path = os.path.join(input_folder_path, video)
+            output_video_path = os.path.join(output_weight_folder, video)
+            output_log_path = os.path.join(output_weight_folder, os.path.splitext(video)[0] + "_result.txt")
+            
+            # 創建並啟動處理該視頻的線程
+            t = threading.Thread(target=process_video, args=(input_video_path, output_video_path, output_log_path, model_path))
+            t.start()
+            threads.append(t)
 
-    for t in threads:
-        t.join()
+        # 等待所有線程結束
+        for t in threads:
+            t.join()
+
+
 
 if __name__ == "__main__":
     main()
+
+
+

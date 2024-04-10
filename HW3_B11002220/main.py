@@ -1,12 +1,20 @@
+'''
+Author: Leo lion24161582@gmail.com
+Date: 2024-04-09 22:21:07
+LastEditors: Leo lion24161582@gmail.com
+LastEditTime: 2024-04-10 00:58:58
+FilePath: \HW3_B11002220\main.py
+Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+'''
 from ultralytics import YOLO
 import cv2
 import math 
 import time 
-# from config import *
+from config import *
 cap = cv2.VideoCapture(0)
 cap.set(3, 640)
 cap.set(4, 480)
-MODEL_PATH = "best_80_v5.pt"
+# MODEL_PATH = "best_80_v5.pt"
 # 模型
 model = YOLO(MODEL_PATH)
 classNames = ["hua", "leo"]
