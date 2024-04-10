@@ -11,7 +11,7 @@ face-detect-7/
 Pipfile
 face-detect-*/
 Face_new-*/
-
+*.mp4
 Pipfile.lock
 output/
 *.txt
