@@ -2,7 +2,7 @@
 Author: Leo lion24161582@gmail.com
 Date: 2024-04-09 22:21:07
 LastEditors: Leo lion24161582@gmail.com
-LastEditTime: 2024-04-10 11:32:24
+LastEditTime: 2024-04-10 23:31:14
 FilePath: \edge_computing\HW3_B11002220\videoTest.py
 Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 '''
@@ -59,9 +59,9 @@ def process_video(video_path, output_path, output_log_path, model_path):
         log_file.write(f"FPS:{fps}\n")
 
 def main():
-    input_folder_path = 'input'
-    output_folder_path = 'output'
-    weight_folder_path = 'weights'
+    input_folder_path = TEST_VIDEO_FOLDER_PATH
+    output_folder_path = OUTPUT_FOLDER_PATH
+    weight_folder_path = WEIGHT_FOLDER_PATH
 
     # 獲取所有權重名稱（不含擴展名）
     weight_names = [os.path.splitext(os.path.basename(f))[0] for f in os.listdir(weight_folder_path) if f.endswith('.pt')]
@@ -100,6 +100,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
