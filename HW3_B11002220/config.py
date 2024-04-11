@@ -19,6 +19,6 @@ VISUALIZE_DIR = 'old_weights_output'
 
 # Train.py參數
 # TRAIN_PATH 訓練的資料夾 
-TRAIN_PATH="Face_New-6"
+TRAIN_PATH="Face_new_three-1"
 EPOCHS = 240  # 訓練次數次數
 SAVE_PERIOD = 80  # 每80 個epoch保存一次模型
