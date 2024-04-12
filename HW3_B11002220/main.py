@@ -1,33 +1,36 @@
-'''
-Author: Leo lion24161582@gmail.com
-Date: 2024-04-09 22:21:07
-LastEditors: Leo lion24161582@gmail.com
-LastEditTime: 2024-04-10 00:58:58
-FilePath: \HW3_B11002220\main.py
-Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
-'''
 from ultralytics import YOLO
 import cv2
+import numpy as np
 import math 
 import time 
 from config import *
 cap = cv2.VideoCapture(0)
 cap.set(3, 640)
-cap.set(4, 480)
-# MODEL_PATH = "best_80_v5.pt"
-# 模型
+cap.set(4, 640)
 model = YOLO(MODEL_PATH)
 classNames = ["hua", "leo"]
 
 frame_counter = 0
 total_time = 0  
 paused = False
-confidence_threshold = 0.8  # 信心閥值
+confidence_threshold = 0.8
+
+def contrast_stretching(img):
+    # 计算图像的最小和最大亮度值
+    min_val = np.min(img)
+    max_val = np.max(img)
+    # 对图像进行对比度拉伸
+    stretched_img = (img - min_val) / (max_val - min_val) * 255
+    return stretched_img.astype(np.uint8)
 
 while True:
     if not paused:
         start_time = time.time()
         success, img = cap.read()
+
+        # 对图像进行对比度拉伸
+        img = contrast_stretching(img)
+        
         results = model(img, stream=True)
 
         for r in results:
@@ -39,7 +42,7 @@ while True:
 
                 confidence = math.ceil((box.conf[0]*100))/100
                 if confidence < confidence_threshold:
-                    continue  # 如果閥值低於跳過
+                    continue
                 cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 255), 3)
                 cls = int(box.cls[0])
                 org = [x1, y1 - 10]
@@ -54,7 +57,6 @@ while True:
         # FPS計算
         end_time = time.time()
         frame_time = end_time - start_time
-        # 顯示FPS和平均FPS
         cv2.putText(img, f"Current FPS: {1/frame_time:.2f}", (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
         
         cv2.imshow('Webcam', img)
